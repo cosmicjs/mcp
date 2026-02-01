@@ -14,21 +14,21 @@ An MCP (Model Context Protocol) server that exposes [Cosmic CMS](https://www.cos
 ### Using npx (recommended)
 
 ```bash
-npx cosmic-mcp
+npx @cosmicjs/mcp
 ```
 
 ### Global installation
 
 ```bash
-npm install -g cosmic-mcp
+npm install -g @cosmicjs/mcp
 cosmic-mcp
 ```
 
 ### From source
 
 ```bash
-git clone https://github.com/cosmicjs/cosmic-mcp.git
-cd cosmic-mcp
+git clone https://github.com/cosmicjs/mcp.git
+cd mcp
 npm install
 npm run build
 ```
@@ -62,7 +62,7 @@ Add the following to your Claude Desktop configuration file:
   "mcpServers": {
     "cosmic": {
       "command": "npx",
-      "args": ["cosmic-mcp"],
+      "args": ["@cosmicjs/mcp"],
       "env": {
         "COSMIC_BUCKET_SLUG": "your-bucket-slug",
         "COSMIC_READ_KEY": "your-read-key",
@@ -82,7 +82,7 @@ Add the following to your Cursor MCP settings (`.cursor/mcp.json`):
   "mcpServers": {
     "cosmic": {
       "command": "npx",
-      "args": ["cosmic-mcp"],
+      "args": ["@cosmicjs/mcp"],
       "env": {
         "COSMIC_BUCKET_SLUG": "your-bucket-slug",
         "COSMIC_READ_KEY": "your-read-key",
