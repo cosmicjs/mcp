@@ -1,0 +1,49 @@
+{
+  "name": "cosmic-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Cosmic CMS - manage objects, media, object types, and AI generation",
+  "keywords": [
+    "mcp",
+    "cosmic",
+    "cms",
+    "headless-cms",
+    "ai",
+    "model-context-protocol"
+  ],
+  "homepage": "https://www.cosmicjs.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cosmicjs/cosmic-mcp.git"
+  },
+  "license": "MIT",
+  "author": "Tony Spiro <tony@cosmicjs.com>",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "cosmic-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup src/index.ts --format esm --watch",
+    "start": "node dist/index.js",
+    "lint": "eslint --fix 'src/**/*.ts'",
+    "format": "prettier --write './src/**/*.ts'",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@cosmicjs/sdk": "^1.5.6",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
