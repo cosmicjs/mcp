@@ -60,9 +60,11 @@ import {
   handleGenerateText,
   handleGenerateImage,
   handleGenerateVideo,
+  handleGenerateAudio,
   generateTextSchema,
   generateImageSchema,
   generateVideoSchema,
+  generateAudioSchema,
 } from './tools/ai.js';
 
 // Combine all tools
@@ -194,6 +196,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request): Promise<CallToo
       case 'cosmic_ai_generate_video': {
         const params = generateVideoSchema.parse(args);
         return toCallToolResult(await handleGenerateVideo(params));
+      }
+      case 'cosmic_ai_generate_audio': {
+        const params = generateAudioSchema.parse(args);
+        return toCallToolResult(await handleGenerateAudio(params));
       }
 
       default:

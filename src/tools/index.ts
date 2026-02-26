@@ -52,9 +52,11 @@ export {
   handleGenerateText,
   handleGenerateImage,
   handleGenerateVideo,
+  handleGenerateAudio,
   generateTextSchema,
   generateImageSchema,
   generateVideoSchema,
+  generateAudioSchema,
 } from './ai.js';
 
 // Combined tool list
