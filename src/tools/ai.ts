@@ -27,7 +27,7 @@ export const generateImageSchema = z.object({
   model: z
     .string()
     .optional()
-    .describe('AI model to use for image generation'),
+    .describe('AI model to use for image generation. Options: gemini-3.1-flash-image-preview (default, recommended), gemini-3-pro-image-preview, dall-e-3'),
   folder: z
     .string()
     .optional()
@@ -64,6 +64,29 @@ export const generateVideoSchema = z.object({
     .record(z.unknown())
     .optional()
     .describe('Additional metadata for the generated video'),
+});
+
+export const generateAudioSchema = z.object({
+  prompt: z.string().describe('The text to convert to speech'),
+  voice: z
+    .enum([
+      'alloy', 'ash', 'coral', 'echo', 'fable',
+      'nova', 'onyx', 'sage', 'shimmer',
+    ])
+    .optional()
+    .describe('Voice to use for speech generation (default: nova)'),
+  model: z
+    .enum(['tts-1', 'tts-1-hd'])
+    .optional()
+    .describe('TTS model to use (default: tts-1)'),
+  folder: z
+    .string()
+    .optional()
+    .describe('Folder to save the generated audio to'),
+  metadata: z
+    .record(z.unknown())
+    .optional()
+    .describe('Additional metadata for the generated audio'),
 });
 
 // Tool definitions
@@ -104,7 +127,7 @@ export const aiTools = [
         },
         model: {
           type: 'string',
-          description: 'AI model to use for image generation',
+          description: 'AI model to use for image generation. Options: gemini-3.1-flash-image-preview (default, recommended), gemini-3-pro-image-preview, dall-e-3',
         },
         folder: {
           type: 'string',
@@ -154,6 +177,42 @@ export const aiTools = [
         metadata: {
           type: 'object',
           description: 'Additional metadata for the generated video',
+        },
+      },
+      required: ['prompt'],
+    },
+  },
+  {
+    name: 'cosmic_ai_generate_audio',
+    description:
+      'Generate audio from text using OpenAI text-to-speech and upload it to your media library. Supports 13 natural-sounding voices. Requires write access.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        prompt: {
+          type: 'string',
+          description: 'The text to convert to speech',
+        },
+        voice: {
+          type: 'string',
+          enum: [
+            'alloy', 'ash', 'coral', 'echo', 'fable',
+            'nova', 'onyx', 'sage', 'shimmer',
+          ],
+          description: 'Voice to use for speech generation (default: nova)',
+        },
+        model: {
+          type: 'string',
+          enum: ['tts-1', 'tts-1-hd'],
+          description: 'TTS model to use (default: tts-1)',
+        },
+        folder: {
+          type: 'string',
+          description: 'Folder to save the generated audio to',
+        },
+        metadata: {
+          type: 'object',
+          description: 'Additional metadata for the generated audio',
         },
       },
       required: ['prompt'],
@@ -282,6 +341,47 @@ export async function handleGenerateVideo(
     const message = error instanceof Error ? error.message : 'Unknown error';
     return {
       content: [{ type: 'text', text: `Error generating video: ${message}` }],
+      isError: true,
+    };
+  }
+}
+
+export async function handleGenerateAudio(
+  params: z.infer<typeof generateAudioSchema>
+): Promise<ToolResult> {
+  try {
+    requireWriteAccess();
+
+    const cosmic = getCosmicClient();
+
+    const response = await cosmic.ai.generateAudio({
+      prompt: params.prompt,
+      voice: params.voice,
+      model: params.model,
+      folder: params.folder,
+      metadata: params.metadata,
+    });
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(
+            {
+              message: 'Audio generated successfully',
+              media: response.media,
+              usage: response.usage,
+            },
+            null,
+            2
+          ),
+        },
+      ],
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return {
+      content: [{ type: 'text', text: `Error generating audio: ${message}` }],
       isError: true,
     };
   }
