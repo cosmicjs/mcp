@@ -22,6 +22,8 @@ const metafieldSchema: z.ZodType<unknown> = z.lazy(() =>
         'date',
         'switch',
         'select-dropdown',
+        'select',
+        'multi-select',
         'radio-buttons',
         'check-boxes',
         'file',
@@ -36,12 +38,12 @@ const metafieldSchema: z.ZodType<unknown> = z.lazy(() =>
     options: z
       .array(
         z.object({
-          key: z.string(),
+          key: z.string().optional(),
           value: z.string(),
         })
       )
       .optional()
-      .describe('Options for select/radio/checkbox types'),
+      .describe('Options for select/radio/checkbox types. select and multi-select use { value } options; select-dropdown uses { key, value } options'),
     children: z.array(metafieldSchema).optional().describe('Child metafields for repeater/parent types'),
     object_type: z.string().optional().describe('Object type slug for object/objects type metafields'),
   })
@@ -156,6 +158,8 @@ export const objectTypeTools = [
                   'date',
                   'switch',
                   'select-dropdown',
+                  'select',
+                  'multi-select',
                   'radio-buttons',
                   'check-boxes',
                   'file',
@@ -164,7 +168,7 @@ export const objectTypeTools = [
                   'repeater',
                   'parent',
                 ],
-                description: 'Metafield type',
+                description: 'Metafield type. Prefer select over select-dropdown for new content models',
               },
               required: { type: 'boolean', description: 'Whether required' },
             },

@@ -62,6 +62,8 @@ export type MetafieldType =
   | 'date'
   | 'switch'
   | 'select-dropdown'
+  | 'select'
+  | 'multi-select'
   | 'radio-buttons'
   | 'check-boxes'
   | 'file'
@@ -71,7 +73,7 @@ export type MetafieldType =
   | 'parent';
 
 export interface MetafieldOption {
-  key: string;
+  key?: string;
   value: string;
 }
 
