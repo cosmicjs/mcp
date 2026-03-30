@@ -1,6 +1,6 @@
 {
   "name": "@cosmicjs/mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP server for Cosmic CMS - manage objects, media, object types, and AI generation",
   "keywords": [
     "mcp",
