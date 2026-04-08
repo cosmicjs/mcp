@@ -36,7 +36,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@cosmicjs/sdk": "^1.5.6",
+    "@cosmicjs/sdk": "^2.0.1",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "zod": "^3.23.8"
   },
