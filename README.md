@@ -9,7 +9,49 @@ An MCP (Model Context Protocol) server that exposes [Cosmic CMS](https://www.cos
 - **Schema Management**: Create and modify object types with custom metafields
 - **AI Generation**: Generate text, images, and videos using Cosmic's AI capabilities
 
-## Installation
+## Hosted endpoint (recommended)
+
+Cosmic operates a hosted streamable-HTTP MCP server. No install required.
+
+| Environment | URL |
+|-------------|-----|
+| Production  | `https://mcp.cosmicjs.com/v1/buckets/{bucket-slug}` |
+| Staging     | `https://mcp.cosmic-staging.com/v1/buckets/{bucket-slug}` |
+
+Authenticate with your bucket's read or write key as a Bearer token:
+
+```
+Authorization: Bearer <your-bucket-read-or-write-key>
+```
+
+Use the **read key** for read-only access (list/get tools), or the **write key** for full access including object creation, media upload, and AI generation.
+
+### Claude Desktop (remote MCP)
+
+In Claude Desktop, **Settings -> Connectors -> Add custom connector**, enter:
+- URL: `https://mcp.cosmicjs.com/v1/buckets/your-bucket-slug`
+- Bearer token: your bucket read or write key
+
+### Cursor (remote MCP)
+
+Add to `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "cosmic": {
+      "url": "https://mcp.cosmicjs.com/v1/buckets/your-bucket-slug",
+      "headers": {
+        "Authorization": "Bearer your-bucket-read-or-write-key"
+      }
+    }
+  }
+}
+```
+
+## Local installation (stdio)
+
+For environments without remote MCP support, the same server runs locally over stdio.
 
 ### Using npx (recommended)
 
@@ -29,8 +71,8 @@ cosmic-mcp
 ```bash
 git clone https://github.com/cosmicjs/mcp.git
 cd mcp
-npm install
-npm run build
+bun install
+bun run build
 ```
 
 ## Configuration
@@ -50,9 +92,9 @@ The server requires the following environment variables:
 3. Go to **Settings** → **API Access**
 4. Copy your bucket slug, read key, and write key
 
-## Usage with Claude Desktop
+### Local stdio with Claude Desktop
 
-Add the following to your Claude Desktop configuration file:
+If you prefer to run the MCP server locally rather than use the hosted endpoint, add the following to your Claude Desktop configuration file.
 
 **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
@@ -73,9 +115,7 @@ Add the following to your Claude Desktop configuration file:
 }
 ```
 
-## Usage with Cursor
-
-Add the following to your Cursor MCP settings (`.cursor/mcp.json`):
+### Local stdio with Cursor
 
 ```json
 {
@@ -185,23 +225,41 @@ Generate an image of a futuristic city skyline at sunset and upload it to my med
 ### Build
 
 ```bash
-npm run build
+bun run build
 ```
 
-### Watch mode
+This produces two binaries:
+- `dist/stdio.js` - npm-published stdio entry (`bin: cosmic-mcp`)
+- `dist/http.js` - hosted streamable-HTTP entry (deployed to ECS Fargate)
+
+### Watch mode (stdio)
 
 ```bash
-npm run dev
+bun run dev
 ```
 
-### Run locally
+### Run locally (stdio)
 
 ```bash
 COSMIC_BUCKET_SLUG=your-bucket \
 COSMIC_READ_KEY=your-read-key \
 COSMIC_WRITE_KEY=your-write-key \
-npm start
+bun run start
 ```
+
+### Run locally (HTTP)
+
+```bash
+bun run dev:http
+# Server listens on http://localhost:3000
+# POST http://localhost:3000/v1/buckets/{slug} with Authorization: Bearer <key>
+```
+
+### Deployment
+
+Pushes to `staging` deploy to `https://mcp.cosmic-staging.com`.
+Pushes to `main` deploy to `https://mcp.cosmicjs.com`.
+Workflow: [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml).
 
 ## API Reference
 
