@@ -18,11 +18,14 @@ Cosmic operates a hosted streamable-HTTP MCP server. No install required.
 | Production  | `https://mcp.cosmicjs.com/v1/buckets/{bucket-slug}` |
 | Staging     | `https://mcp.cosmic-staging.com/v1/buckets/{bucket-slug}` |
 
-Authenticate with your bucket's read or write key as a Bearer token:
+Cosmic uses separate read and write keys per bucket. Authenticate with one of:
 
 ```
-Authorization: Bearer <your-bucket-read-or-write-key>
+Authorization: Bearer <read_key>                       # read-only tools
+Authorization: Bearer <read_key>:<write_key>           # full access
 ```
+
+You can also send the write key out-of-band via the `X-Cosmic-Write-Key` header if your client can't colon-pack the bearer token. Keys are issued in your bucket's API Access settings in the Cosmic dashboard.
 
 Use the **read key** for read-only access (list/get tools), or the **write key** for full access including object creation, media upload, and AI generation.
 
@@ -30,7 +33,7 @@ Use the **read key** for read-only access (list/get tools), or the **write key**
 
 In Claude Desktop, **Settings -> Connectors -> Add custom connector**, enter:
 - URL: `https://mcp.cosmicjs.com/v1/buckets/your-bucket-slug`
-- Bearer token: your bucket read or write key
+- Bearer token: `<read_key>` for read-only access, or `<read_key>:<write_key>` for full access
 
 ### Cursor (remote MCP)
 
@@ -42,7 +45,7 @@ Add to `.cursor/mcp.json`:
     "cosmic": {
       "url": "https://mcp.cosmicjs.com/v1/buckets/your-bucket-slug",
       "headers": {
-        "Authorization": "Bearer your-bucket-read-or-write-key"
+        "Authorization": "Bearer your-bucket-read-key:your-bucket-write-key"
       }
     }
   }
