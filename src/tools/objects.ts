@@ -5,6 +5,7 @@
 
 import { z } from 'zod';
 import { getCosmicClient, requireWriteAccess } from '../client.js';
+import { formatToolError, isNotFoundError } from '../errors.js';
 import type { ToolResult } from '../types.js';
 
 // Schema definitions for tool inputs
@@ -336,7 +337,17 @@ export async function handleListObjects(
       ],
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    if (isNotFoundError(error)) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({ objects: [], total: 0 }, null, 2),
+          },
+        ],
+      };
+    }
+    const message = formatToolError(error);
     return {
       content: [{ type: 'text', text: `Error listing objects: ${message}` }],
       isError: true,
@@ -399,7 +410,7 @@ export async function handleGetObject(
       ],
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    const message = formatToolError(error);
     return {
       content: [{ type: 'text', text: `Error getting object: ${message}` }],
       isError: true,
@@ -440,7 +451,7 @@ export async function handleCreateObject(
       ],
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    const message = formatToolError(error);
     return {
       content: [{ type: 'text', text: `Error creating object: ${message}` }],
       isError: true,
@@ -481,7 +492,7 @@ export async function handleUpdateObject(
       ],
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    const message = formatToolError(error);
     return {
       content: [{ type: 'text', text: `Error updating object: ${message}` }],
       isError: true,
@@ -514,7 +525,7 @@ export async function handleDeleteObject(
       ],
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    const message = formatToolError(error);
     return {
       content: [{ type: 'text', text: `Error deleting object: ${message}` }],
       isError: true,

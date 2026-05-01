@@ -5,6 +5,7 @@
 
 import { z } from 'zod';
 import { getCosmicClient, requireWriteAccess } from '../client.js';
+import { formatToolError, isNotFoundError } from '../errors.js';
 import type { ToolResult } from '../types.js';
 
 // Schema definitions for tool inputs
@@ -203,7 +204,17 @@ export async function handleListMedia(
       ],
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    if (isNotFoundError(error)) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({ media: [], total: 0 }, null, 2),
+          },
+        ],
+      };
+    }
+    const message = formatToolError(error);
     return {
       content: [{ type: 'text', text: `Error listing media: ${message}` }],
       isError: true,
@@ -234,7 +245,7 @@ export async function handleGetMedia(
       ],
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    const message = formatToolError(error);
     return {
       content: [{ type: 'text', text: `Error getting media: ${message}` }],
       isError: true,
@@ -295,7 +306,7 @@ export async function handleUploadMedia(
       ],
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    const message = formatToolError(error);
     return {
       content: [{ type: 'text', text: `Error uploading media: ${message}` }],
       isError: true,
@@ -328,7 +339,7 @@ export async function handleDeleteMedia(
       ],
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    const message = formatToolError(error);
     return {
       content: [{ type: 'text', text: `Error deleting media: ${message}` }],
       isError: true,

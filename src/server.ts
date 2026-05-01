@@ -67,6 +67,8 @@ import {
   generateAudioSchema,
 } from './tools/ai.js';
 
+import { formatToolError } from './errors.js';
+
 export const SERVER_NAME = 'cosmic-mcp';
 export const SERVER_VERSION = '1.2.0';
 
@@ -214,7 +216,7 @@ export function createServer(options: CreateServerOptions = {}): Server {
           };
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
+      const message = formatToolError(error);
       return {
         content: [
           {
