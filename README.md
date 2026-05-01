@@ -259,6 +259,19 @@ bun run dev:http
 
 Pushes to `main` deploy to `https://mcp.cosmicjs.com` via GitHub Actions. Workflow: [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml).
 
+### Releasing to npm
+
+The npm package is published by the [`publish.yml`](.github/workflows/publish.yml) workflow when a `vX.Y.Z` tag is pushed:
+
+```bash
+# After bumping the version field in package.json and merging to main:
+git checkout main && git pull
+git tag v1.2.0
+git push origin v1.2.0
+```
+
+The workflow verifies the tag matches `package.json` version, builds, and runs `npm publish --provenance --access public`. Requires the `NPM_TOKEN` repo secret.
+
 ## API Reference
 
 For more information about the Cosmic API, see:
