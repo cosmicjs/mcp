@@ -13,10 +13,7 @@ An MCP (Model Context Protocol) server that exposes [Cosmic CMS](https://www.cos
 
 Cosmic operates a hosted streamable-HTTP MCP server. No install required.
 
-| Environment | URL |
-|-------------|-----|
-| Production  | `https://mcp.cosmicjs.com/v1/buckets/{bucket-slug}` |
-| Staging     | `https://mcp.cosmic-staging.com/v1/buckets/{bucket-slug}` |
+URL: `https://mcp.cosmicjs.com/v1/buckets/{bucket-slug}`
 
 Cosmic uses separate read and write keys per bucket. Authenticate with one of:
 
@@ -260,9 +257,7 @@ bun run dev:http
 
 ### Deployment
 
-Pushes to `staging` deploy to `https://mcp.cosmic-staging.com`.
-Pushes to `main` deploy to `https://mcp.cosmicjs.com`.
-Workflow: [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml).
+Pushes to `main` deploy to `https://mcp.cosmicjs.com` via GitHub Actions. Workflow: [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml).
 
 ## API Reference
 
