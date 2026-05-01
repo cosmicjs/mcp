@@ -1,0 +1,222 @@
+name: Deploy Hosted MCP
+
+on:
+  push:
+    branches:
+      - staging
+      - main
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-west-2
+  ECR_REPOSITORY: cosmic-mcp
+  CLUSTER: CosmicMcpCluster
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: 'true'
+
+      - name: Build and push docker image
+        uses: docker/bake-action@v5
+        with:
+          push: true
+          files: |
+            ./docker-bake.hcl
+          targets: mcp
+          set: |
+            mcp.tags=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+            mcp.tags=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+            mcp.tags=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.ref_name }}
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
+
+      - name: Verify image exists in ECR
+        run: |
+          aws ecr describe-images --repository-name ${{ env.ECR_REPOSITORY }} --image-ids imageTag=${{ github.sha }} --region ${{ env.AWS_REGION }}
+
+  staging:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/staging' || github.event_name == 'workflow_dispatch'
+    needs: build
+    env:
+      SERVICE: CosmicMcpStaging
+      TASK_FAMILY: CosmicMcpStaging
+      DESIRED_COUNT: 1
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: 'true'
+
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition --task-definition ${{ env.TASK_FAMILY }} --query taskDefinition > task-definition.json
+
+      - name: Render new ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: cosmic-mcp
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+
+      - name: Ensure service desired count
+        run: |
+          CURRENT=$(aws ecs describe-services --cluster ${{ env.CLUSTER }} --services ${{ env.SERVICE }} --region ${{ env.AWS_REGION }} --query 'services[0].desiredCount' --output text)
+          if [ "$CURRENT" -lt "${{ env.DESIRED_COUNT }}" ]; then
+            echo "Scaling ${{ env.SERVICE }} from $CURRENT to ${{ env.DESIRED_COUNT }}"
+            aws ecs update-service --cluster ${{ env.CLUSTER }} --service ${{ env.SERVICE }} --desired-count ${{ env.DESIRED_COUNT }} --region ${{ env.AWS_REGION }} > /dev/null
+          fi
+
+      - name: Deploy ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.SERVICE }}
+          cluster: ${{ env.CLUSTER }}
+          wait-for-service-stability: true
+          wait-for-minutes: 15
+
+      - name: Verify deployment
+        run: |
+          RUNNING=$(aws ecs describe-services --cluster ${{ env.CLUSTER }} --services ${{ env.SERVICE }} --region ${{ env.AWS_REGION }} --query 'services[0].runningCount' --output text)
+          DESIRED=$(aws ecs describe-services --cluster ${{ env.CLUSTER }} --services ${{ env.SERVICE }} --region ${{ env.AWS_REGION }} --query 'services[0].desiredCount' --output text)
+          if [ "$RUNNING" -eq "$DESIRED" ]; then
+            echo "Staging deploy ok: $RUNNING/$DESIRED tasks running"
+          else
+            echo "Staging deploy failed: $RUNNING/$DESIRED tasks running"
+            exit 1
+          fi
+
+      - name: Smoke test staging endpoint
+        run: |
+          for i in 1 2 3 4 5 6; do
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" https://mcp.cosmic-staging.com/healthz || true)
+            if [ "$CODE" = "200" ]; then
+              echo "Staging healthz returned 200"
+              exit 0
+            fi
+            echo "Attempt $i: got '$CODE', retrying..."
+            sleep 10
+          done
+          echo "Staging healthz never returned 200"
+          exit 1
+
+  production:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    env:
+      SERVICE: CosmicMcpProduction
+      TASK_FAMILY: CosmicMcpProduction
+      DESIRED_COUNT: 2
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: 'true'
+
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition --task-definition ${{ env.TASK_FAMILY }} --query taskDefinition > task-definition.json
+
+      - name: Render new ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: cosmic-mcp
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+
+      - name: Ensure service desired count
+        run: |
+          CURRENT=$(aws ecs describe-services --cluster ${{ env.CLUSTER }} --services ${{ env.SERVICE }} --region ${{ env.AWS_REGION }} --query 'services[0].desiredCount' --output text)
+          if [ "$CURRENT" -lt "${{ env.DESIRED_COUNT }}" ]; then
+            echo "Scaling ${{ env.SERVICE }} from $CURRENT to ${{ env.DESIRED_COUNT }}"
+            aws ecs update-service --cluster ${{ env.CLUSTER }} --service ${{ env.SERVICE }} --desired-count ${{ env.DESIRED_COUNT }} --region ${{ env.AWS_REGION }} > /dev/null
+          fi
+
+      - name: Deploy ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.SERVICE }}
+          cluster: ${{ env.CLUSTER }}
+          wait-for-service-stability: true
+          wait-for-minutes: 15
+
+      - name: Verify deployment
+        run: |
+          RUNNING=$(aws ecs describe-services --cluster ${{ env.CLUSTER }} --services ${{ env.SERVICE }} --region ${{ env.AWS_REGION }} --query 'services[0].runningCount' --output text)
+          DESIRED=$(aws ecs describe-services --cluster ${{ env.CLUSTER }} --services ${{ env.SERVICE }} --region ${{ env.AWS_REGION }} --query 'services[0].desiredCount' --output text)
+          if [ "$RUNNING" -eq "$DESIRED" ]; then
+            echo "Production deploy ok: $RUNNING/$DESIRED tasks running"
+          else
+            echo "Production deploy failed: $RUNNING/$DESIRED tasks running"
+            exit 1
+          fi
+
+      - name: Smoke test production endpoint
+        run: |
+          for i in 1 2 3 4 5 6; do
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" https://mcp.cosmicjs.com/healthz || true)
+            if [ "$CODE" = "200" ]; then
+              echo "Production healthz returned 200"
+              exit 0
+            fi
+            echo "Attempt $i: got '$CODE', retrying..."
+            sleep 10
+          done
+          echo "Production healthz never returned 200"
+          exit 1
+
+      - name: Cleanup old task definitions
+        run: |
+          ARNS=$(aws ecs list-task-definitions --family-prefix ${{ env.TASK_FAMILY }} --status ACTIVE --sort DESC --query 'taskDefinitionArns[10:]' --output text)
+          for arn in $ARNS; do
+            aws ecs deregister-task-definition --task-definition $arn > /dev/null 2>&1 || true
+          done

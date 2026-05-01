@@ -1,6 +1,6 @@
 {
   "name": "@cosmicjs/mcp",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "MCP server for Cosmic CMS - manage objects, media, object types, and AI generation",
   "keywords": [
     "mcp",
@@ -18,22 +18,24 @@
   "license": "MIT",
   "author": "Tony Spiro <tony@cosmicjs.com>",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "dist/stdio.js",
   "bin": {
-    "cosmic-mcp": "dist/index.js"
+    "cosmic-mcp": "dist/stdio.js"
   },
   "files": [
     "dist"
   ],
   "scripts": {
     "build": "tsup",
-    "dev": "tsup src/index.ts --format esm --watch",
-    "start": "node dist/index.js",
+    "dev": "tsup --watch",
+    "dev:http": "tsup --watch --onSuccess 'node dist/http.js'",
+    "start": "node dist/stdio.js",
+    "start:http": "node dist/http.js",
     "lint": "eslint --fix 'src/**/*.ts'",
     "format": "prettier --write './src/**/*.ts'",
     "changeset": "changeset",
-    "release": "npm run build && changeset publish",
-    "prepublishOnly": "npm run build"
+    "release": "bun run build && changeset publish",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
     "@cosmicjs/sdk": "^2.0.1",

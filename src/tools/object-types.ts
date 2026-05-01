@@ -5,6 +5,7 @@
 
 import { z } from 'zod';
 import { getCosmicClient, requireWriteAccess } from '../client.js';
+import { formatToolError, isNotFoundError } from '../errors.js';
 import type { ToolResult } from '../types.js';
 
 // Metafield schema for validation
@@ -269,7 +270,17 @@ export async function handleListObjectTypes(): Promise<ToolResult> {
       ],
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    if (isNotFoundError(error)) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({ object_types: [] }, null, 2),
+          },
+        ],
+      };
+    }
+    const message = formatToolError(error);
     return {
       content: [{ type: 'text', text: `Error listing object types: ${message}` }],
       isError: true,
@@ -293,7 +304,7 @@ export async function handleGetObjectType(
       ],
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    const message = formatToolError(error);
     return {
       content: [{ type: 'text', text: `Error getting object type: ${message}` }],
       isError: true,
@@ -332,7 +343,7 @@ export async function handleCreateObjectType(
       ],
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    const message = formatToolError(error);
     return {
       content: [{ type: 'text', text: `Error creating object type: ${message}` }],
       isError: true,
@@ -372,7 +383,7 @@ export async function handleUpdateObjectType(
       ],
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    const message = formatToolError(error);
     return {
       content: [{ type: 'text', text: `Error updating object type: ${message}` }],
       isError: true,
@@ -405,7 +416,7 @@ export async function handleDeleteObjectType(
       ],
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    const message = formatToolError(error);
     return {
       content: [{ type: 'text', text: `Error deleting object type: ${message}` }],
       isError: true,

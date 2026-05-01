@@ -1,0 +1,13 @@
+node_modules
+dist
+.git
+.github
+.cursor
+.vscode
+.husky
+.changeset
+*.md
+.env*
+.DS_Store
+coverage
+.nyc_output

@@ -5,6 +5,7 @@
 
 import { z } from 'zod';
 import { getCosmicClient, requireWriteAccess } from '../client.js';
+import { formatToolError } from '../errors.js';
 import type { ToolResult } from '../types.js';
 
 // Schema definitions for tool inputs
@@ -251,7 +252,7 @@ export async function handleGenerateText(
       ],
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    const message = formatToolError(error);
     return {
       content: [{ type: 'text', text: `Error generating text: ${message}` }],
       isError: true,
@@ -291,7 +292,7 @@ export async function handleGenerateImage(
       ],
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    const message = formatToolError(error);
     return {
       content: [{ type: 'text', text: `Error generating image: ${message}` }],
       isError: true,
@@ -338,7 +339,7 @@ export async function handleGenerateVideo(
       ],
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    const message = formatToolError(error);
     return {
       content: [{ type: 'text', text: `Error generating video: ${message}` }],
       isError: true,
@@ -379,7 +380,7 @@ export async function handleGenerateAudio(
       ],
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    const message = formatToolError(error);
     return {
       content: [{ type: 'text', text: `Error generating audio: ${message}` }],
       isError: true,
