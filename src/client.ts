@@ -16,6 +16,7 @@ import { createBucketClient } from '@cosmicjs/sdk';
 import type { CosmicConfig } from './types.js';
 
 export type CosmicClient = ReturnType<typeof createBucketClient>;
+export type CosmicApiEnvironment = 'production' | 'staging';
 
 export interface RequestContext {
   client: CosmicClient;
@@ -33,6 +34,31 @@ export function getRequestContext(): RequestContext | undefined {
   return requestContextStorage.getStore();
 }
 
+// The hosted MCP runs in two AWS environments and talks to two distinct
+// Cosmic API backends. `mcp.cosmicjs.com` -> api.cosmicjs.com (production),
+// `mcp.cosmic-staging.com` -> api.cosmic-staging.com (staging). The mode is
+// pinned per-task-definition via `COSMIC_API_ENVIRONMENT`. For escape-hatch
+// scenarios (custom workers URL during migration, local dev against a
+// localhost API, etc.), `COSMIC_API_URL` + `COSMIC_UPLOAD_URL` override.
+export function getApiEnvironment(): CosmicApiEnvironment {
+  const raw = (process.env.COSMIC_API_ENVIRONMENT ?? '').toLowerCase().trim();
+  return raw === 'staging' ? 'staging' : 'production';
+}
+
+interface ConnectionOptions {
+  apiEnvironment?: CosmicApiEnvironment;
+  custom?: { apiUrl: string; uploadUrl: string };
+}
+
+function getConnectionOptions(): ConnectionOptions {
+  const apiUrl = process.env.COSMIC_API_URL?.trim();
+  const uploadUrl = process.env.COSMIC_UPLOAD_URL?.trim();
+  if (apiUrl && uploadUrl) {
+    return { custom: { apiUrl, uploadUrl } };
+  }
+  return { apiEnvironment: getApiEnvironment() };
+}
+
 export function createBucketClientForRequest(opts: {
   bucketSlug: string;
   readKey: string;
@@ -42,6 +68,7 @@ export function createBucketClientForRequest(opts: {
     bucketSlug: opts.bucketSlug,
     readKey: opts.readKey,
     writeKey: opts.writeKey,
+    ...getConnectionOptions(),
   });
 }
 
@@ -82,6 +109,7 @@ export function getCosmicClient(): CosmicClient {
     bucketSlug: config.bucketSlug,
     readKey: config.readKey,
     writeKey: config.writeKey,
+    ...getConnectionOptions(),
   });
   return stdioSingleton;
 }
