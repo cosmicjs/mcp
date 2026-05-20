@@ -67,16 +67,30 @@ import {
   generateAudioSchema,
 } from './tools/ai.js';
 
+import {
+  agentTools,
+  handleAgentSignup,
+  handleAgentVerify,
+  handleAgentStatus,
+  agentSignupSchema,
+  agentVerifySchema,
+} from './tools/agent.js';
+
 import { formatToolError } from './errors.js';
 
 export const SERVER_NAME = 'cosmic-mcp';
 export const SERVER_VERSION = '1.2.0';
 
 /**
- * Server scope. v1 ships only `bucket`. `account` is reserved for the future
- * account-level MCP at `/v1/account` (PAT-authenticated, cross-bucket tools).
+ * Server scope.
+ *
+ *   - `bucket`: tools that operate against a single Cosmic bucket via the
+ *               data-plane API. Authenticated by bucket read/write keys.
+ *   - `agent` : bucket-less signup flow at /v1/agent. Authenticated by an
+ *               agent_key for verify/status; signup itself is unauthenticated.
+ *   - `account`: reserved for future PAT-authenticated cross-bucket tools.
  */
-export type ServerScope = 'bucket' | 'account';
+export type ServerScope = 'bucket' | 'agent' | 'account';
 
 export interface CreateServerOptions {
   scope?: ServerScope;
@@ -100,6 +114,7 @@ function toCallToolResult(result: {
 }
 
 export function getToolsForScope(scope: ServerScope) {
+  if (scope === 'agent') return agentTools;
   if (scope === 'bucket') return bucketTools;
   return bucketTools;
 }
@@ -202,6 +217,18 @@ export function createServer(options: CreateServerOptions = {}): Server {
         case 'cosmic_ai_generate_audio': {
           const params = generateAudioSchema.parse(args);
           return toCallToolResult(await handleGenerateAudio(params));
+        }
+
+        case 'cosmic_agent_signup': {
+          const params = agentSignupSchema.parse(args);
+          return toCallToolResult(await handleAgentSignup(params));
+        }
+        case 'cosmic_agent_verify': {
+          const params = agentVerifySchema.parse(args);
+          return toCallToolResult(await handleAgentVerify(params));
+        }
+        case 'cosmic_agent_status': {
+          return toCallToolResult(await handleAgentStatus());
         }
 
         default:

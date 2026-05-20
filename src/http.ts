@@ -31,6 +31,7 @@ import {
   createBucketClientForRequest,
   withRequestContext,
 } from './client.js';
+import { withAgentRequestContext } from './dapiClient.js';
 import {
   SERVER_NAME,
   SERVER_VERSION,
@@ -100,7 +101,11 @@ function readBody(req: IncomingMessage, maxBytes = 1024 * 1024): Promise<string>
 }
 
 function getDescriptor() {
-  const tools = getToolsForScope('bucket').map((t) => ({
+  const bucketToolDescriptors = getToolsForScope('bucket').map((t) => ({
+    name: t.name,
+    description: t.description,
+  }));
+  const agentToolDescriptors = getToolsForScope('agent').map((t) => ({
     name: t.name,
     description: t.description,
   }));
@@ -111,13 +116,17 @@ function getDescriptor() {
     protocolVersion: PROTOCOL_VERSION,
     transport: 'streamable-http',
     description:
-      'Cosmic CMS MCP server. Manage objects, media, object types, and AI generation in a Cosmic bucket. Authenticate with `Authorization: Bearer <read_key>` for read-only access, or `Authorization: Bearer <read_key>:<write_key>` for full access. The write key may also be sent out-of-band via the `X-Cosmic-Write-Key` header.',
+      'Cosmic CMS MCP server. Two scopes: `/v1/buckets/{slug}` for bucket-scoped tools (objects, media, types, AI gen) authenticated with bucket keys, and `/v1/agent` for the agent signup flow (no prior credentials required) where an AI agent can provision a Cosmic project tied to a human email.',
     endpoints: {
       bucket: '/v1/buckets/{bucket-slug}',
+      agent: '/v1/agent',
       account: '/v1/account (reserved for future use)',
     },
     documentation: 'https://www.cosmicjs.com/docs',
-    tools,
+    tools: {
+      bucket: bucketToolDescriptors,
+      agent: agentToolDescriptors,
+    },
   };
 }
 
@@ -149,6 +158,10 @@ function matchBucketRoute(pathname: string): RouteMatch | null {
   const m = pathname.match(/^\/v1\/buckets\/([^\/?#]+)\/?$/);
   if (!m) return null;
   return { bucketSlug: decodeURIComponent(m[1]) };
+}
+
+function matchAgentRoute(pathname: string): boolean {
+  return /^\/v1\/agent\/?$/.test(pathname);
 }
 
 async function handleMcpRequest(
@@ -258,6 +271,58 @@ async function handleMcpRequest(
   );
 }
 
+async function handleAgentMcpRequest(
+  req: IncomingMessage,
+  res: ServerResponse,
+): Promise<void> {
+  // Agent scope auth: Bearer is OPTIONAL because cosmic_agent_signup is
+  // public. cosmic_agent_verify and cosmic_agent_status will throw inside
+  // their handlers (via `getAgentKey()`) if no key is present.
+  let agentKey: string | undefined;
+  const auth = req.headers['authorization'];
+  if (typeof auth === 'string') {
+    const m = auth.match(/^Bearer\s+(.+)$/i);
+    if (m) {
+      const token = m[1].trim();
+      if (token) agentKey = token;
+    }
+  }
+
+  let parsedBody: unknown = undefined;
+  if (req.method === 'POST') {
+    try {
+      const raw = await readBody(req);
+      parsedBody = raw.length === 0 ? undefined : JSON.parse(raw);
+    } catch (error) {
+      return sendJson(res, 400, {
+        jsonrpc: '2.0',
+        error: {
+          code: -32700,
+          message: 'Parse error',
+          data: { detail: (error as Error).message },
+        },
+        id: null,
+      });
+    }
+  }
+
+  const transport = new StreamableHTTPServerTransport({
+    sessionIdGenerator: undefined,
+    enableJsonResponse: true,
+  });
+  const mcpServer = createServer({ scope: 'agent' });
+
+  res.on('close', () => {
+    transport.close().catch(() => {});
+  });
+
+  await mcpServer.connect(transport);
+
+  await withAgentRequestContext({ agentKey }, async () => {
+    await transport.handleRequest(req, res, parsedBody);
+  });
+}
+
 const server = http.createServer(async (req, res) => {
   const requestStart = Date.now();
   const method = req.method ?? 'GET';
@@ -295,6 +360,15 @@ const server = http.createServer(async (req, res) => {
         return res.end(JSON.stringify({ error: 'method_not_allowed' }));
       }
       await handleMcpRequest(req, res, bucketMatch.bucketSlug);
+      return;
+    }
+
+    if (matchAgentRoute(pathname)) {
+      if (method !== 'POST' && method !== 'GET' && method !== 'DELETE') {
+        res.writeHead(405, { 'Content-Type': 'application/json', Allow: 'POST, GET, DELETE' });
+        return res.end(JSON.stringify({ error: 'method_not_allowed' }));
+      }
+      await handleAgentMcpRequest(req, res);
       return;
     }
 
