@@ -56,6 +56,7 @@ export interface Metafield {
 export type MetafieldType =
   | 'text'
   | 'textarea'
+  | 'rich-text'
   | 'html-textarea'
   | 'markdown'
   | 'number'
