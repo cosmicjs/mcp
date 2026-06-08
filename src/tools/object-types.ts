@@ -17,6 +17,7 @@ const metafieldSchema: z.ZodType<unknown> = z.lazy(() =>
       .enum([
         'text',
         'textarea',
+        'rich-text',
         'html-textarea',
         'markdown',
         'number',
@@ -33,7 +34,9 @@ const metafieldSchema: z.ZodType<unknown> = z.lazy(() =>
         'repeater',
         'parent',
       ])
-      .describe('Metafield type'),
+      .describe(
+        'Metafield type. Prefer rich-text for new long-form content (markdown plus optional {{name /}} block tokens referencing existing bucket blocks, and inline object embeds {{object type="..." id="..." slug="..." /}} for existing objects); html-textarea is deprecated. "object"/"objects" are reserved block names.'
+      ),
     required: z.boolean().optional().describe('Whether this field is required'),
     value: z.unknown().optional().describe('Default value'),
     options: z
@@ -153,6 +156,7 @@ export const objectTypeTools = [
                 enum: [
                   'text',
                   'textarea',
+                  'rich-text',
                   'html-textarea',
                   'markdown',
                   'number',
@@ -169,7 +173,7 @@ export const objectTypeTools = [
                   'repeater',
                   'parent',
                 ],
-                description: 'Metafield type. Prefer select over select-dropdown for new content models',
+                description: 'Metafield type. Prefer rich-text for new long-form content (markdown plus {{name /}} block tokens for existing bucket blocks and inline object embeds {{object type="..." id="..." slug="..." /}} for existing objects); html-textarea is deprecated. Prefer select over select-dropdown for new content models.',
               },
               required: { type: 'boolean', description: 'Whether required' },
             },
