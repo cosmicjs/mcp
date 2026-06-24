@@ -267,16 +267,17 @@ Pushes to `main` deploy to `https://mcp.cosmicjs.com` via GitHub Actions. Workfl
 
 ### Releasing to npm
 
-The npm package is published by the [`publish.yml`](.github/workflows/publish.yml) workflow when a `vX.Y.Z` tag is pushed:
+Releases are driven by [Changesets](https://github.com/changesets/changesets). Every change that should ship adds a changeset (`bunx changeset`) describing the bump (`patch` | `minor` | `major`).
+
+To cut a release, run one command from a clean `main`:
 
 ```bash
-# After bumping the version field in package.json and merging to main:
-git checkout main && git pull
-git tag v1.2.0
-git push origin v1.2.0
+bun run release
 ```
 
-The workflow verifies the tag matches `package.json` version, builds, and runs `npm publish --provenance --access public`. Requires the `NPM_TOKEN` repo secret.
+This consumes the pending changesets to bump the version, refreshes the lockfile, commits `chore(release): vX.Y.Z`, then tags and pushes. It prompts once before the tag push (pass `-- --yes` to skip). Pushing the tag triggers the [`publish.yml`](.github/workflows/publish.yml) workflow, which verifies the tag matches `package.json`, builds, and runs `npm publish --provenance --access public` (requires the `NPM_TOKEN` repo secret).
+
+Do not hand-edit the `version` field in `package.json`; let the changeset bump it. If you ever need to publish directly from your machine (with a local npm token, no provenance), `bun run release:direct` runs `changeset publish`.
 
 ## API Reference
 
