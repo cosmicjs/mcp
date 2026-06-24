@@ -36,6 +36,24 @@ PENDING="$(find .changeset -maxdepth 1 -name '*.md' ! -name 'README.md' | wc -l 
 echo "→ Syncing main..."
 git pull --ff-only origin main
 
+# Guard: a prior version bump that was never tagged/published. If package.json
+# is already ahead of the latest tag, bumping again would skip publishing that
+# version (this is exactly how an unpublished v1.5.0 turned into a bogus v1.6.0).
+CURRENT_VERSION="$(node -p "require('./package.json').version")"
+if ! git rev-parse "v${CURRENT_VERSION}" >/dev/null 2>&1; then
+  echo "⚠️  package.json is at v${CURRENT_VERSION}, but no v${CURRENT_VERSION} tag exists."
+  echo "    A previous release was likely versioned but never published."
+  echo "    To publish that existing version instead of bumping again, run:"
+  echo "      git push origin main && git tag v${CURRENT_VERSION} && git push origin v${CURRENT_VERSION}"
+  if [ "$SKIP_CONFIRM" != "1" ]; then
+    read -r -p "Bump to a NEW version on top of the unpublished one anyway? [y/N] " reply
+    case "$reply" in
+      y|Y|yes|YES) ;;
+      *) fail "Aborted. Publish the existing v${CURRENT_VERSION} first (commands above)." ;;
+    esac
+  fi
+fi
+
 # --- Version bump from changesets ---------------------------------------
 echo "→ Versioning from changesets..."
 bunx changeset version
