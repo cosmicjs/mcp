@@ -59,10 +59,18 @@ export {
   generateAudioSchema,
 } from './ai.js';
 
+// Content block tools
+export {
+  blockTools,
+  handleListBlocks,
+  listBlocksSchema,
+} from './blocks.js';
+
 // Combined tool list
 export const allTools = [
   ...objectTools,
   ...mediaTools,
   ...objectTypeTools,
   ...aiTools,
+  ...blockTools,
 ];

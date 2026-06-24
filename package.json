@@ -38,7 +38,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@cosmicjs/sdk": "^2.0.1",
+    "@cosmicjs/sdk": "^2.1.0",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "zod": "^3.23.8"
   },
