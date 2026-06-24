@@ -172,6 +172,12 @@ If you prefer to run the MCP server locally rather than use the hosted endpoint,
 | `cosmic_ai_generate_image` | Generate and upload an AI image (requires write key) |
 | `cosmic_ai_generate_video` | Generate and upload an AI video (requires write key) |
 
+### Content Blocks
+
+| Tool | Description |
+|------|-------------|
+| `cosmic_blocks_list` | List the bucket's reusable rich-text Content Blocks (the `{{name /}}` tokens available in rich-text fields) |
+
 ## Example Prompts
 
 Here are some example prompts you can use with Claude or Cursor:
