@@ -76,6 +76,8 @@ import {
   agentVerifySchema,
 } from './tools/agent.js';
 
+import { blockTools, handleListBlocks } from './tools/blocks.js';
+
 import { formatToolError } from './errors.js';
 
 export const SERVER_NAME = 'cosmic-mcp';
@@ -101,6 +103,7 @@ const bucketTools = [
   ...mediaTools,
   ...objectTypeTools,
   ...aiTools,
+  ...blockTools,
 ];
 
 function toCallToolResult(result: {
@@ -217,6 +220,10 @@ export function createServer(options: CreateServerOptions = {}): Server {
         case 'cosmic_ai_generate_audio': {
           const params = generateAudioSchema.parse(args);
           return toCallToolResult(await handleGenerateAudio(params));
+        }
+
+        case 'cosmic_blocks_list': {
+          return toCallToolResult(await handleListBlocks());
         }
 
         case 'cosmic_agent_signup': {

@@ -4,7 +4,7 @@
     "": {
       "name": "cosmic-mcp",
       "dependencies": {
-        "@cosmicjs/sdk": "^2.0.1",
+        "@cosmicjs/sdk": "^2.1.0",
         "@modelcontextprotocol/sdk": "^1.0.0",
         "zod": "^3.23.8",
       },
@@ -53,7 +53,7 @@
 
     "@changesets/write": ["@changesets/write@0.4.0", "", { "dependencies": { "@changesets/types": "^6.1.0", "fs-extra": "^7.0.1", "human-id": "^4.1.1", "prettier": "^2.7.1" } }, "sha512-CdTLvIOPiCNuH71pyDu3rA+Q0n65cmAbXnwWH84rKGiFumFzkmHNT8KHTMEchcxN+Kl8I54xGUhJ7l3E7X396Q=="],
 
-    "@cosmicjs/sdk": ["@cosmicjs/sdk@2.0.1", "", {}, "sha512-Z1i063no/iOEiIoUL/kjRwJYdcsT/6x5S4XH3trFQJR2o9FLTwCWrYOBf8mw4MhEZp3Zax9b3qst1GLbVKXXtg=="],
+    "@cosmicjs/sdk": ["@cosmicjs/sdk@2.1.0", "", {}, "sha512-ocVmDJ05furPR0OGeUodf/cpEHBUL0B2hKAd3Zrmelf7zkRZvTBYNV4o1dJQ5Uh7MY6nnq8Nozuzd4xlm8lGqA=="],
 
     "@esbuild/aix-ppc64": ["@esbuild/aix-ppc64@0.27.2", "", { "os": "aix", "cpu": "ppc64" }, "sha512-GZMB+a0mOMZs4MpDbj8RJp4cw+w1WV5NYD6xzgvzUJ5Ek2jerwfO2eADyI6ExDSUED+1X8aMbegahsJi+8mgpw=="],
 
