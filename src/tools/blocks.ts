@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { getCosmicClient } from '../client.js';
 import { formatToolError, isNotFoundError } from '../errors.js';
 import type { ToolResult } from '../types.js';
+import { readOnlyTool } from './annotations.js';
 
 // Schema definitions for tool inputs
 export const listBlocksSchema = z.object({});
@@ -17,6 +18,7 @@ export const listBlocksSchema = z.object({});
 export const blockTools = [
   {
     name: 'cosmic_blocks_list',
+    ...readOnlyTool('List content blocks'),
     description:
       'List the reusable rich-text Content Blocks defined in the Cosmic bucket. Blocks are referenced inside rich-text metafields with a {{name /}} token. Use this to discover which block shortcodes exist before writing rich-text content that references them. Returns each block\'s name (shortcode), title, description, editor type, and content.',
     inputSchema: {

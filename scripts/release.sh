@@ -58,6 +58,9 @@ fi
 echo "→ Versioning from changesets..."
 bunx changeset version
 
+echo "→ Syncing server.json and SERVER_VERSION..."
+node scripts/sync-version.mjs
+
 echo "→ Refreshing lockfile..."
 bun install
 

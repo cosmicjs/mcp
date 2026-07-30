@@ -81,7 +81,7 @@ import { blockTools, handleListBlocks } from './tools/blocks.js';
 import { formatToolError } from './errors.js';
 
 export const SERVER_NAME = 'cosmic-mcp';
-export const SERVER_VERSION = '1.2.0';
+export const SERVER_VERSION = '1.5.0';
 
 /**
  * Server scope.

@@ -277,7 +277,32 @@ bun run release
 
 This consumes the pending changesets to bump the version, refreshes the lockfile, commits `chore(release): vX.Y.Z`, then tags and pushes. It prompts once before the tag push (pass `-- --yes` to skip). Pushing the tag triggers the [`publish.yml`](.github/workflows/publish.yml) workflow, which verifies the tag matches `package.json`, builds, and runs `npm publish --provenance --access public` (requires the `NPM_TOKEN` repo secret).
 
-Do not hand-edit the `version` field in `package.json`; let the changeset bump it. If you ever need to publish directly from your machine (with a local npm token, no provenance), `bun run release:direct` runs `changeset publish`.
+Do not hand-edit the `version` field in `package.json`; let the changeset bump it. The release also runs `scripts/sync-version.mjs`, which copies the new version into `server.json` and `SERVER_VERSION` in `src/server.ts` so all three always agree. If you ever need to publish directly from your machine (with a local npm token, no provenance), `bun run release:direct` runs `changeset publish`.
+
+### Publishing to the MCP registry
+
+The server is listed on [registry.modelcontextprotocol.io](https://registry.modelcontextprotocol.io) under the `com.cosmicjs` namespace, described by [`server.json`](./server.json).
+
+Order matters: the registry verifies the listing against what is actually on npm, so release to npm first and publish the listing second. `mcpName` in `package.json` must always equal `name` in `server.json`, which is how the registry proves we own the npm package.
+
+One-time setup to prove domain ownership. This uses ECDSA P-384 because macOS ships LibreSSL, which cannot generate Ed25519 keys (`brew install openssl@3` if you prefer Ed25519):
+
+```bash
+openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:secp384r1 -out key.pem
+
+PUBLIC_KEY="$(openssl ec -in key.pem -text -noout -conv_form compressed | grep -A4 "pub:" | tail -n +2 | tr -d ' :\n' | xxd -r -p | base64)"
+echo "cosmicjs.com. IN TXT \"v=MCPv1; k=ecdsap384; p=${PUBLIC_KEY}\""
+```
+
+Add that TXT record on the **apex** of `cosmicjs.com`. A selector such as `_mcp-auth.cosmicjs.com` will not be found and fails with a generic signature error. Keep `key.pem` out of the repo.
+
+Then, after each npm release, publish the listing:
+
+```bash
+PRIVATE_KEY="$(openssl ec -in key.pem -noout -text | grep -A4 "priv:" | tail -n +2 | tr -d ' :\n')"
+mcp-publisher login dns --domain cosmicjs.com --private-key "${PRIVATE_KEY}"
+mcp-publisher publish
+```
 
 ## API Reference
 

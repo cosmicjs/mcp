@@ -2,6 +2,7 @@
   "name": "@cosmicjs/mcp",
   "version": "1.5.0",
   "description": "MCP server for Cosmic CMS - manage objects, media, object types, and AI generation",
+  "mcpName": "com.cosmicjs/mcp",
   "keywords": [
     "mcp",
     "cosmic",
@@ -34,6 +35,7 @@
     "lint": "eslint --fix 'src/**/*.ts'",
     "format": "prettier --write './src/**/*.ts'",
     "changeset": "changeset",
+    "sync-version": "node scripts/sync-version.mjs",
     "release": "bash scripts/release.sh",
     "release:direct": "bun run build && changeset publish",
     "prepublishOnly": "bun run build"

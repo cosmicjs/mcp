@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { getCosmicClient, requireWriteAccess } from '../client.js';
 import { formatToolError } from '../errors.js';
 import type { ToolResult } from '../types.js';
+import { additiveTool } from './annotations.js';
 
 // Schema definitions for tool inputs
 export const generateTextSchema = z.object({
@@ -94,6 +95,7 @@ export const generateAudioSchema = z.object({
 export const aiTools = [
   {
     name: 'cosmic_ai_generate_text',
+    ...additiveTool('Generate text'),
     description:
       'Generate text content using Cosmic AI. Useful for creating content, descriptions, summaries, and more.',
     inputSchema: {
@@ -117,6 +119,7 @@ export const aiTools = [
   },
   {
     name: 'cosmic_ai_generate_image',
+    ...additiveTool('Generate image'),
     description:
       'Generate an image using Cosmic AI and automatically upload it to your media library. Requires write access.',
     inputSchema: {
@@ -148,6 +151,7 @@ export const aiTools = [
   },
   {
     name: 'cosmic_ai_generate_video',
+    ...additiveTool('Generate video'),
     description:
       'Generate a video using Cosmic AI (powered by Veo) and automatically upload it to your media library. Requires write access.',
     inputSchema: {
@@ -185,6 +189,7 @@ export const aiTools = [
   },
   {
     name: 'cosmic_ai_generate_audio',
+    ...additiveTool('Generate audio'),
     description:
       'Generate audio from text using OpenAI text-to-speech and upload it to your media library. Supports 13 natural-sounding voices. Requires write access.',
     inputSchema: {
