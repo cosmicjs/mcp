@@ -294,15 +294,17 @@ PUBLIC_KEY="$(openssl ec -in key.pem -text -noout -conv_form compressed | grep -
 echo "cosmicjs.com. IN TXT \"v=MCPv1; k=ecdsap384; p=${PUBLIC_KEY}\""
 ```
 
-Add that TXT record on the **apex** of `cosmicjs.com`. A selector such as `_mcp-auth.cosmicjs.com` will not be found and fails with a generic signature error. Keep `key.pem` out of the repo.
+Add that TXT record on the **apex** of `cosmicjs.com`. A selector such as `_mcp-auth.cosmicjs.com` will not be found and fails with a generic signature error. The apex TXT set also holds the SPF and Google verification records, so append to it rather than replacing it. Keep `key.pem` out of the repo; it lives in `~/.cosmic-mcp/key.pem`.
 
-Then, after each npm release, publish the listing:
+Then, after each npm release, publish the listing (`brew install mcp-publisher` first):
 
 ```bash
-PRIVATE_KEY="$(openssl ec -in key.pem -noout -text | grep -A4 "priv:" | tail -n +2 | tr -d ' :\n')"
-mcp-publisher login dns --domain cosmicjs.com --private-key "${PRIVATE_KEY}"
+PRIVATE_KEY="$(openssl ec -in ~/.cosmic-mcp/key.pem -noout -text | grep -A4 "priv:" | tail -n +2 | tr -d ' :\n')"
+mcp-publisher login dns --algorithm ecdsap384 --domain cosmicjs.com --private-key "${PRIVATE_KEY}"
 mcp-publisher publish
 ```
+
+`--algorithm ecdsap384` is required. The publisher defaults to ed25519 and rejects the P-384 key with `invalid seed length: expected 32 bytes, got 48`, which reads like a corrupt key rather than a wrong algorithm.
 
 ## API Reference
 
