@@ -36,8 +36,8 @@
     "format": "prettier --write './src/**/*.ts'",
     "changeset": "changeset",
     "sync-version": "node scripts/sync-version.mjs",
-    "release": "bash scripts/release.sh",
-    "release:direct": "bun run build && changeset publish",
+    "version": "changeset version && node scripts/sync-version.mjs && bun install",
+    "release": "bun run build && changeset publish",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
