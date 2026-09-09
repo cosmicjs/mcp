@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { getCosmicClient, requireWriteAccess } from '../client.js';
 import { formatToolError, isNotFoundError } from '../errors.js';
 import type { ToolResult } from '../types.js';
+import { additiveTool, destructiveTool, readOnlyTool } from './annotations.js';
 
 // Schema definitions for tool inputs
 export const listObjectsSchema = z.object({
@@ -109,6 +110,7 @@ export const deleteObjectSchema = z.object({
 export const objectTools = [
   {
     name: 'cosmic_objects_list',
+    ...readOnlyTool('List objects'),
     description:
       'List objects from the Cosmic bucket with optional filters for type, status, and pagination. Returns an array of objects with their metadata.',
     inputSchema: {
@@ -156,6 +158,7 @@ export const objectTools = [
   },
   {
     name: 'cosmic_objects_get',
+    ...readOnlyTool('Get object'),
     description:
       'Get a single object by ID or by slug+type. Returns the full object with all metadata.',
     inputSchema: {
@@ -189,6 +192,7 @@ export const objectTools = [
   },
   {
     name: 'cosmic_objects_create',
+    ...additiveTool('Create object'),
     description:
       'Create a new object in the Cosmic bucket. Requires write access.',
     inputSchema: {
@@ -230,6 +234,7 @@ export const objectTools = [
   },
   {
     name: 'cosmic_objects_update',
+    ...destructiveTool('Update object'),
     description:
       'Update an existing object by ID. Only provided fields will be updated. Requires write access.',
     inputSchema: {
@@ -266,6 +271,7 @@ export const objectTools = [
   },
   {
     name: 'cosmic_objects_delete',
+    ...destructiveTool('Delete object'),
     description:
       'Delete an object by ID. This action is permanent. Requires write access.',
     inputSchema: {

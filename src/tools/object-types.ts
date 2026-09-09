@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { getCosmicClient, requireWriteAccess } from '../client.js';
 import { formatToolError, isNotFoundError } from '../errors.js';
 import type { ToolResult } from '../types.js';
+import { additiveTool, destructiveTool, readOnlyTool } from './annotations.js';
 
 // Metafield schema for validation
 const metafieldSchema: z.ZodType<unknown> = z.lazy(() =>
@@ -102,6 +103,7 @@ export const deleteObjectTypeSchema = z.object({
 export const objectTypeTools = [
   {
     name: 'cosmic_types_list',
+    ...readOnlyTool('List object types'),
     description:
       'List all object types in the Cosmic bucket. Returns the schema definitions including metafields for each type.',
     inputSchema: {
@@ -111,6 +113,7 @@ export const objectTypeTools = [
   },
   {
     name: 'cosmic_types_get',
+    ...readOnlyTool('Get object type'),
     description:
       'Get a single object type by slug. Returns the full schema including all metafield definitions.',
     inputSchema: {
@@ -126,6 +129,7 @@ export const objectTypeTools = [
   },
   {
     name: 'cosmic_types_create',
+    ...additiveTool('Create object type'),
     description:
       'Create a new object type with a custom schema. Define metafields to structure your content. Requires write access.',
     inputSchema: {
@@ -194,6 +198,7 @@ export const objectTypeTools = [
   },
   {
     name: 'cosmic_types_update',
+    ...destructiveTool('Update object type'),
     description:
       'Update an existing object type schema. Can modify title, metafields, and options. Requires write access.',
     inputSchema: {
@@ -238,6 +243,7 @@ export const objectTypeTools = [
   },
   {
     name: 'cosmic_types_delete',
+    ...destructiveTool('Delete object type'),
     description:
       'Delete an object type by slug. WARNING: This will also delete all objects of this type. Requires write access.',
     inputSchema: {

@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { getCosmicClient, requireWriteAccess } from '../client.js';
 import { formatToolError, isNotFoundError } from '../errors.js';
 import type { ToolResult } from '../types.js';
+import { additiveTool, destructiveTool, readOnlyTool } from './annotations.js';
 
 // Schema definitions for tool inputs
 export const listMediaSchema = z.object({
@@ -64,6 +65,7 @@ export const deleteMediaSchema = z.object({
 export const mediaTools = [
   {
     name: 'cosmic_media_list',
+    ...readOnlyTool('List media'),
     description:
       'List media files from the Cosmic bucket with optional folder filter and pagination.',
     inputSchema: {
@@ -93,6 +95,7 @@ export const mediaTools = [
   },
   {
     name: 'cosmic_media_get',
+    ...readOnlyTool('Get media file'),
     description:
       'Get details of a single media file by ID. Returns the full media object with URL and metadata.',
     inputSchema: {
@@ -113,6 +116,7 @@ export const mediaTools = [
   },
   {
     name: 'cosmic_media_upload',
+    ...additiveTool('Upload media'),
     description:
       'Upload a media file to the Cosmic bucket from a URL or base64-encoded data. Requires write access.',
     inputSchema: {
@@ -142,6 +146,7 @@ export const mediaTools = [
   },
   {
     name: 'cosmic_media_delete',
+    ...destructiveTool('Delete media'),
     description:
       'Delete a media file by ID. This action is permanent. Requires write access.',
     inputSchema: {

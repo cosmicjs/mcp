@@ -169,7 +169,7 @@ If you prefer to run the MCP server locally rather than use the hosted endpoint,
 | Tool | Description |
 |------|-------------|
 | `cosmic_ai_generate_text` | Generate text content using AI |
-| `cosmic_ai_generate_image` | Generate and upload an AI image (requires write key) |
+| `cosmic_ai_generate_image` | Generate and upload an AI image or SVG (requires write key) |
 | `cosmic_ai_generate_video` | Generate and upload an AI video (requires write key) |
 
 ### Content Blocks
@@ -267,16 +267,40 @@ Pushes to `main` deploy to `https://mcp.cosmicjs.com` via GitHub Actions. Workfl
 
 ### Releasing to npm
 
-The npm package is published by the [`publish.yml`](.github/workflows/publish.yml) workflow when a `vX.Y.Z` tag is pushed:
+Releases use the same [Changesets](https://github.com/changesets/changesets) flow as `@cosmicjs/sdk`. Every change that should ship adds a changeset (`bunx changeset`) describing the bump (`patch` | `minor` | `major`). Do not hand-edit the `version` field in `package.json`.
+
+1. Merge the feature PR to `main`. [Package Checks](.github/workflows/main.yml) must pass.
+2. CI opens or updates a **Version Packages** PR. That PR consumes the changeset, bumps the version, updates `CHANGELOG.md`, and runs `scripts/sync-version.mjs` so `server.json` and `SERVER_VERSION` stay in sync.
+3. Merging the Version Packages PR publishes to npm via [`publish.yml`](.github/workflows/publish.yml) (requires the `NPM_TOKEN` repo secret).
+
+Do not push `v*.*.*` tags by hand. Hosted MCP deploys from `main` / `staging` separately via [`deploy.yml`](.github/workflows/deploy.yml).
+
+### Publishing to the MCP registry
+
+The server is listed on [registry.modelcontextprotocol.io](https://registry.modelcontextprotocol.io) under the `com.cosmicjs` namespace, described by [`server.json`](./server.json).
+
+Order matters: the registry verifies the listing against what is actually on npm, so release to npm first and publish the listing second. `mcpName` in `package.json` must always equal `name` in `server.json`, which is how the registry proves we own the npm package.
+
+One-time setup to prove domain ownership. This uses ECDSA P-384 because macOS ships LibreSSL, which cannot generate Ed25519 keys (`brew install openssl@3` if you prefer Ed25519):
 
 ```bash
-# After bumping the version field in package.json and merging to main:
-git checkout main && git pull
-git tag v1.2.0
-git push origin v1.2.0
+openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:secp384r1 -out key.pem
+
+PUBLIC_KEY="$(openssl ec -in key.pem -text -noout -conv_form compressed | grep -A4 "pub:" | tail -n +2 | tr -d ' :\n' | xxd -r -p | base64)"
+echo "cosmicjs.com. IN TXT \"v=MCPv1; k=ecdsap384; p=${PUBLIC_KEY}\""
 ```
 
-The workflow verifies the tag matches `package.json` version, builds, and runs `npm publish --provenance --access public`. Requires the `NPM_TOKEN` repo secret.
+Add that TXT record on the **apex** of `cosmicjs.com`. A selector such as `_mcp-auth.cosmicjs.com` will not be found and fails with a generic signature error. The apex TXT set also holds the SPF and Google verification records, so append to it rather than replacing it. Keep `key.pem` out of the repo; it lives in `~/.cosmic-mcp/key.pem`.
+
+Then, after each npm release, publish the listing (`brew install mcp-publisher` first):
+
+```bash
+PRIVATE_KEY="$(openssl ec -in ~/.cosmic-mcp/key.pem -noout -text | grep -A4 "priv:" | tail -n +2 | tr -d ' :\n')"
+mcp-publisher login dns --algorithm ecdsap384 --domain cosmicjs.com --private-key "${PRIVATE_KEY}"
+mcp-publisher publish
+```
+
+`--algorithm ecdsap384` is required. The publisher defaults to ed25519 and rejects the P-384 key with `invalid seed length: expected 32 bytes, got 48`, which reads like a corrupt key rather than a wrong algorithm.
 
 ## API Reference
 

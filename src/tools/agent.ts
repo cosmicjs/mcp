@@ -15,6 +15,7 @@
 import { z } from 'zod';
 import { dapiRequest } from '../dapiClient.js';
 import type { ToolResult } from '../types.js';
+import { additiveTool, readOnlyTool } from './annotations.js';
 
 export const agentSignupSchema = z.object({
   human_email: z
@@ -67,6 +68,7 @@ export const agentStatusSchema = z.object({});
 export const agentTools = [
   {
     name: 'cosmic_agent_signup',
+    ...additiveTool('Create agent project'),
     description:
       'Create a new, unclaimed Cosmic project + bucket tied to a human email. Returns bucket keys (read_key, write_key) plus an agent_key the agent uses for verify/status. The bucket starts in restricted mode (no AI credits, max 50 objects, max 5 MB media). Cosmic emails the human a 6-digit OTP and a claim URL; the human pastes the OTP back to the agent which calls cosmic_agent_verify to lift restrictions. If the email already belongs to a real Cosmic user, returns a 409; ask the human to log in and grant the agent a bucket key instead.',
     inputSchema: {
@@ -99,6 +101,7 @@ export const agentTools = [
   },
   {
     name: 'cosmic_agent_verify',
+    ...additiveTool('Verify agent project'),
     description:
       'Submit the 6-digit OTP code the human received via email to verify the agent project. On success, the bucket lifts restricted-mode limits (AI credits, object/media caps). Requires agent_key from cosmic_agent_signup.',
     inputSchema: {
@@ -114,6 +117,7 @@ export const agentTools = [
   },
   {
     name: 'cosmic_agent_status',
+    ...readOnlyTool('Get agent status'),
     description:
       'Return the current auth_type ("unclaimed" or "verified"), plan, claim status, and tier limits for the authenticated agent key. Use this to introspect what the agent is currently allowed to do, especially after a 402 agent_unclaimed_limit error.',
     inputSchema: {

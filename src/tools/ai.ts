@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { getCosmicClient, requireWriteAccess } from '../client.js';
 import { formatToolError } from '../errors.js';
 import type { ToolResult } from '../types.js';
+import { additiveTool } from './annotations.js';
 
 // Schema definitions for tool inputs
 export const generateTextSchema = z.object({
@@ -25,10 +26,18 @@ export const generateTextSchema = z.object({
 
 export const generateImageSchema = z.object({
   prompt: z.string().describe('The prompt describing the image to generate'),
+  format: z
+    .enum(['png', 'svg'])
+    .optional()
+    .describe('Output format. Use svg for logos, icons, illustrations, and vector artwork. Default: png'),
   model: z
     .string()
     .optional()
-    .describe('AI model to use for image generation. Options: gemini-3.1-flash-image-preview (default, recommended), gemini-3-pro-image-preview, dall-e-3'),
+    .describe('AI model to use for PNG generation. Options: gemini-3.1-flash-image-preview (default, recommended), gemini-3-pro-image-preview, dall-e-3. Ignored for SVG.'),
+  aspect_ratio: z
+    .enum(['1:1', '16:9', '9:16', '4:3', '3:4'])
+    .optional()
+    .describe('Aspect ratio. For SVG this sets the viewBox. Default: 1:1'),
   folder: z
     .string()
     .optional()
@@ -94,6 +103,7 @@ export const generateAudioSchema = z.object({
 export const aiTools = [
   {
     name: 'cosmic_ai_generate_text',
+    ...additiveTool('Generate text'),
     description:
       'Generate text content using Cosmic AI. Useful for creating content, descriptions, summaries, and more.',
     inputSchema: {
@@ -117,8 +127,9 @@ export const aiTools = [
   },
   {
     name: 'cosmic_ai_generate_image',
+    ...additiveTool('Generate image'),
     description:
-      'Generate an image using Cosmic AI and automatically upload it to your media library. Requires write access.',
+      'Generate an image using Cosmic AI and automatically upload it to your media library. Use format "svg" for logos, icons, illustrations, and vector artwork. For PNG display media.imgix_url; for SVG display media.url (imgix does not serve SVG). Requires write access.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -126,9 +137,19 @@ export const aiTools = [
           type: 'string',
           description: 'The prompt describing the image to generate',
         },
+        format: {
+          type: 'string',
+          enum: ['png', 'svg'],
+          description: 'Output format. Use svg for logos, icons, illustrations, and vector artwork. Default: png',
+        },
         model: {
           type: 'string',
-          description: 'AI model to use for image generation. Options: gemini-3.1-flash-image-preview (default, recommended), gemini-3-pro-image-preview, dall-e-3',
+          description: 'AI model to use for PNG generation. Options: gemini-3.1-flash-image-preview (default, recommended), gemini-3-pro-image-preview, dall-e-3. Ignored for SVG.',
+        },
+        aspect_ratio: {
+          type: 'string',
+          enum: ['1:1', '16:9', '9:16', '4:3', '3:4'],
+          description: 'Aspect ratio. For SVG this sets the viewBox. Default: 1:1',
         },
         folder: {
           type: 'string',
@@ -148,6 +169,7 @@ export const aiTools = [
   },
   {
     name: 'cosmic_ai_generate_video',
+    ...additiveTool('Generate video'),
     description:
       'Generate a video using Cosmic AI (powered by Veo) and automatically upload it to your media library. Requires write access.',
     inputSchema: {
@@ -185,6 +207,7 @@ export const aiTools = [
   },
   {
     name: 'cosmic_ai_generate_audio',
+    ...additiveTool('Generate audio'),
     description:
       'Generate audio from text using OpenAI text-to-speech and upload it to your media library. Supports 13 natural-sounding voices. Requires write access.',
     inputSchema: {
@@ -274,6 +297,8 @@ export async function handleGenerateImage(
       folder: params.folder,
       metadata: params.metadata,
       alt_text: params.alt_text,
+      ...(params.format ? { format: params.format } : {}),
+      ...(params.aspect_ratio ? { aspect_ratio: params.aspect_ratio } : {}),
     });
 
     return {
