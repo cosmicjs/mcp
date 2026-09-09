@@ -267,17 +267,13 @@ Pushes to `main` deploy to `https://mcp.cosmicjs.com` via GitHub Actions. Workfl
 
 ### Releasing to npm
 
-Releases are driven by [Changesets](https://github.com/changesets/changesets). Every change that should ship adds a changeset (`bunx changeset`) describing the bump (`patch` | `minor` | `major`).
+Releases use the same [Changesets](https://github.com/changesets/changesets) flow as `@cosmicjs/sdk`. Every change that should ship adds a changeset (`bunx changeset`) describing the bump (`patch` | `minor` | `major`). Do not hand-edit the `version` field in `package.json`.
 
-To cut a release, run one command from a clean `main`:
+1. Merge the feature PR to `main`. [Package Checks](.github/workflows/main.yml) must pass.
+2. CI opens or updates a **Version Packages** PR. That PR consumes the changeset, bumps the version, updates `CHANGELOG.md`, and runs `scripts/sync-version.mjs` so `server.json` and `SERVER_VERSION` stay in sync.
+3. Merging the Version Packages PR publishes to npm via [`publish.yml`](.github/workflows/publish.yml) (requires the `NPM_TOKEN` repo secret).
 
-```bash
-bun run release
-```
-
-This consumes the pending changesets to bump the version, refreshes the lockfile, commits `chore(release): vX.Y.Z`, then tags and pushes. It prompts once before the tag push (pass `-- --yes` to skip). Pushing the tag triggers the [`publish.yml`](.github/workflows/publish.yml) workflow, which verifies the tag matches `package.json`, builds, and runs `npm publish --provenance --access public` (requires the `NPM_TOKEN` repo secret).
-
-Do not hand-edit the `version` field in `package.json`; let the changeset bump it. The release also runs `scripts/sync-version.mjs`, which copies the new version into `server.json` and `SERVER_VERSION` in `src/server.ts` so all three always agree. If you ever need to publish directly from your machine (with a local npm token, no provenance), `bun run release:direct` runs `changeset publish`.
+Do not push `v*.*.*` tags by hand. Hosted MCP deploys from `main` / `staging` separately via [`deploy.yml`](.github/workflows/deploy.yml).
 
 ### Publishing to the MCP registry
 

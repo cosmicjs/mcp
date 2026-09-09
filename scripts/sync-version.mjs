@@ -9,8 +9,8 @@
  *     served in the HTTP descriptor. This had already drifted to 1.2.0 while the
  *     package was at 1.5.0.
  *
- * Run automatically by scripts/release.sh after `changeset version`, so the
- * release commit always carries matching versions.
+ * Run automatically by `bun run version` after `changeset version`, so the
+ * Version Packages commit always carries matching versions.
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';
