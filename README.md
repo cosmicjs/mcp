@@ -169,7 +169,7 @@ If you prefer to run the MCP server locally rather than use the hosted endpoint,
 | Tool | Description |
 |------|-------------|
 | `cosmic_ai_generate_text` | Generate text content using AI |
-| `cosmic_ai_generate_image` | Generate and upload an AI image (requires write key) |
+| `cosmic_ai_generate_image` | Generate and upload an AI image or SVG (requires write key) |
 | `cosmic_ai_generate_video` | Generate and upload an AI video (requires write key) |
 
 ### Content Blocks
