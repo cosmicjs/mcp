@@ -1,5 +1,11 @@
 # @cosmicjs/mcp
 
+## 1.7.0
+
+### Minor Changes
+
+- c926db9: Add `format` (`png` | `svg`) and `aspect_ratio` to `cosmic_ai_generate_image` for vector logos, icons, and illustrations.
+
 ## 1.6.0
 
 ### Minor Changes
