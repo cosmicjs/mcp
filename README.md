@@ -1,6 +1,10 @@
 # Cosmic MCP Server
 
-An MCP (Model Context Protocol) server that exposes [Cosmic CMS](https://www.cosmicjs.com) functionality as tools for AI assistants. Manage your content, media, object types, and generate AI content directly through Claude, Cursor, or any MCP-compatible client.
+Cosmic is a headless CMS with a hosted MCP server, in-product AI workflows, and agent signup. An agent can read and write content, generate text, images, video, and audio into the media library, chain content, code, and browser steps, or provision a new project with no existing account.
+
+Capability table: https://www.cosmicjs.com/ai-cms
+
+Signup MCP (no credentials): https://mcp.cosmicjs.com/v1/agent
 
 ## Features
 
