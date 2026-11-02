@@ -1,5 +1,11 @@
 # @cosmicjs/mcp
 
+## 1.7.1
+
+### Patch Changes
+
+- feaf5a7: Fix `cosmic_media_upload`: URLs are now fetched server-side instead of failing, and uploads keep a file name and MIME type (from the URL, response headers, or data URI). Adds optional `filename` and `content_type` parameters.
+
 ## 1.7.0
 
 ### Minor Changes
