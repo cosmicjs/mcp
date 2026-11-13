@@ -1,0 +1,1 @@
+Manage Cosmic CMS content, media, object types, and AI generation from any MCP client.

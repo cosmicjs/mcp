@@ -13,11 +13,13 @@ Signup MCP (no credentials): https://mcp.cosmicjs.com/v1/agent
 - **Schema Management**: Create and modify object types with custom metafields
 - **AI Generation**: Generate text, images, and videos using Cosmic's AI capabilities
 
+Directory copy, the tool list, and the logo are in [listing](./listing).
+
 ## Hosted endpoint (recommended)
 
 Cosmic operates a hosted streamable-HTTP MCP server. No install required.
 
-URL: `https://mcp.cosmicjs.com/v1/buckets/{bucket-slug}`
+URL: `https://mcp.cosmicjs.com/v1/buckets/{bucket_slug}`
 
 Cosmic uses separate read and write keys per bucket. Authenticate with one of:
 
@@ -60,7 +62,7 @@ For environments without remote MCP support, the same server runs locally over s
 ### Using npx (recommended)
 
 ```bash
-npx @cosmicjs/mcp
+npx -y @cosmicjs/mcp
 ```
 
 ### Global installation
@@ -108,7 +110,7 @@ If you prefer to run the MCP server locally rather than use the hosted endpoint,
   "mcpServers": {
     "cosmic": {
       "command": "npx",
-      "args": ["@cosmicjs/mcp"],
+      "args": ["-y", "@cosmicjs/mcp"],
       "env": {
         "COSMIC_BUCKET_SLUG": "your-bucket-slug",
         "COSMIC_READ_KEY": "your-read-key",
@@ -126,7 +128,7 @@ If you prefer to run the MCP server locally rather than use the hosted endpoint,
   "mcpServers": {
     "cosmic": {
       "command": "npx",
-      "args": ["@cosmicjs/mcp"],
+      "args": ["-y", "@cosmicjs/mcp"],
       "env": {
         "COSMIC_BUCKET_SLUG": "your-bucket-slug",
         "COSMIC_READ_KEY": "your-read-key",
@@ -326,4 +328,4 @@ Contributions are welcome! Please open an issue or submit a pull request.
 
 - [Cosmic Documentation](https://www.cosmicjs.com/docs)
 - [Cosmic Discord](https://discord.gg/cosmic)
-- [GitHub Issues](https://github.com/cosmicjs/cosmic-mcp/issues)
+- [GitHub Issues](https://github.com/cosmicjs/mcp/issues)

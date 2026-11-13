@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "cosmic": {
+      "url": "https://mcp.cosmicjs.com/v1/buckets/${COSMIC_BUCKET_SLUG}",
+      "headers": {
+        "Authorization": "Bearer ${COSMIC_READ_KEY}:${COSMIC_WRITE_KEY}"
+      }
+    }
+  }
+}

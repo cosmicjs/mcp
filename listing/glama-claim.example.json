@@ -1,0 +1,4 @@
+{
+  "$schema": "https://glama.ai/mcp/schemas/connector.json",
+  "claim": "glama_claim_PASTE_THE_TOKEN_GLAMA_SHOWS"
+}

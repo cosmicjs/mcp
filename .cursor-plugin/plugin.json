@@ -1,0 +1,36 @@
+{
+  "name": "cosmic",
+  "displayName": "Cosmic",
+  "version": "1.7.1",
+  "description": "Manage Cosmic CMS content, media, object types, and AI generation from any MCP client.",
+  "author": {
+    "name": "Cosmic",
+    "email": "support@cosmicjs.com"
+  },
+  "homepage": "https://www.cosmicjs.com/docs/mcp-server",
+  "repository": "https://github.com/cosmicjs/mcp",
+  "license": "MIT",
+  "keywords": ["mcp", "cms", "cosmic", "content"],
+  "logo": "listing/logo.png",
+  "variables": {
+    "type": "object",
+    "required": ["COSMIC_BUCKET_SLUG", "COSMIC_READ_KEY"],
+    "properties": {
+      "COSMIC_BUCKET_SLUG": {
+        "type": "string",
+        "title": "Bucket slug",
+        "description": "Slug of the Cosmic bucket. Find it under Settings, API Access."
+      },
+      "COSMIC_READ_KEY": {
+        "type": "string",
+        "title": "Read key",
+        "description": "Bucket read key."
+      },
+      "COSMIC_WRITE_KEY": {
+        "type": "string",
+        "title": "Write key",
+        "description": "Bucket write key. Leave empty for read-only tools."
+      }
+    }
+  }
+}

@@ -12,6 +12,8 @@
  *   GET  /                                          - descriptor JSON
  *   GET  /healthz                                   - liveness for ALB
  *   GET  /.well-known/oauth-protected-resource      - RFC 9728 PRM
+ *   GET  /.well-known/mcp/server-card.json          - Smithery static server card
+ *   GET  /.well-known/glama.json                    - Glama claim, when GLAMA_CLAIM_TOKEN is set
  *   POST /v1/buckets/:slug                          - MCP request entry
  *   GET  /v1/buckets/:slug                          - MCP SSE entry
  *   DEL  /v1/buckets/:slug                          - MCP session terminate
@@ -127,6 +129,39 @@ function getDescriptor() {
       bucket: bucketToolDescriptors,
       agent: agentToolDescriptors,
     },
+  };
+}
+
+function getServerCard() {
+  return {
+    serverInfo: {
+      name: 'Cosmic',
+      version: SERVER_VERSION,
+    },
+    authentication: {
+      required: true,
+      schemes: ['bearer'],
+    },
+    tools: getToolsForScope('bucket').map((tool) => ({
+      name: tool.name,
+      title: tool.title,
+      description: tool.description,
+      inputSchema: tool.inputSchema,
+      annotations: tool.annotations,
+    })),
+    resources: [],
+    prompts: [],
+  };
+}
+
+function getGlamaClaim(): { $schema: string; claim: string | string[] } | null {
+  const raw = process.env.GLAMA_CLAIM_TOKEN?.trim();
+  if (!raw) return null;
+  const claims = raw.split(',').map((part) => part.trim()).filter(Boolean);
+  if (claims.length === 0) return null;
+  return {
+    $schema: 'https://glama.ai/mcp/schemas/connector.json',
+    claim: claims.length === 1 ? claims[0] : claims,
   };
 }
 
@@ -351,6 +386,25 @@ const server = http.createServer(async (req, res) => {
       pathname === '/.well-known/oauth-protected-resource'
     ) {
       return sendJson(res, 200, getProtectedResourceMetadata(req.headers.host ?? 'localhost'));
+    }
+
+    if (
+      (method === 'GET' || method === 'HEAD') &&
+      pathname === '/.well-known/mcp/server-card.json'
+    ) {
+      return sendJson(res, 200, getServerCard());
+    }
+
+    if ((method === 'GET' || method === 'HEAD') && pathname === '/.well-known/glama.json') {
+      const claim = getGlamaClaim();
+      if (!claim) {
+        return sendJson(res, 404, {
+          error: 'not_found',
+          error_description:
+            'Set GLAMA_CLAIM_TOKEN to the claim value Glama shows, then redeploy.',
+        });
+      }
+      return sendJson(res, 200, claim);
     }
 
     const bucketMatch = matchBucketRoute(pathname);

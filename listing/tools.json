@@ -1,0 +1,178 @@
+[
+  {
+    "name": "cosmic_objects_list",
+    "title": "List objects",
+    "description": "List objects from the Cosmic bucket with optional filters for type, status, and pagination.",
+    "scope": "bucket",
+    "readOnlyHint": true,
+    "destructiveHint": false
+  },
+  {
+    "name": "cosmic_objects_get",
+    "title": "Get object",
+    "description": "Get a single object by ID or by slug and type.",
+    "scope": "bucket",
+    "readOnlyHint": true,
+    "destructiveHint": false
+  },
+  {
+    "name": "cosmic_objects_create",
+    "title": "Create object",
+    "description": "Create a new object in the Cosmic bucket. Requires write access.",
+    "scope": "bucket",
+    "readOnlyHint": false,
+    "destructiveHint": false
+  },
+  {
+    "name": "cosmic_objects_update",
+    "title": "Update object",
+    "description": "Update an existing object by ID. Requires write access.",
+    "scope": "bucket",
+    "readOnlyHint": false,
+    "destructiveHint": true
+  },
+  {
+    "name": "cosmic_objects_delete",
+    "title": "Delete object",
+    "description": "Delete an object by ID. This action is permanent. Requires write access.",
+    "scope": "bucket",
+    "readOnlyHint": false,
+    "destructiveHint": true
+  },
+  {
+    "name": "cosmic_media_list",
+    "title": "List media",
+    "description": "List media files with an optional folder filter and pagination.",
+    "scope": "bucket",
+    "readOnlyHint": true,
+    "destructiveHint": false
+  },
+  {
+    "name": "cosmic_media_get",
+    "title": "Get media file",
+    "description": "Get one media file by ID, including its URL and metadata.",
+    "scope": "bucket",
+    "readOnlyHint": true,
+    "destructiveHint": false
+  },
+  {
+    "name": "cosmic_media_upload",
+    "title": "Upload media",
+    "description": "Upload a media file from a URL or base64 data. Requires write access.",
+    "scope": "bucket",
+    "readOnlyHint": false,
+    "destructiveHint": false
+  },
+  {
+    "name": "cosmic_media_delete",
+    "title": "Delete media",
+    "description": "Delete a media file by ID. This action is permanent. Requires write access.",
+    "scope": "bucket",
+    "readOnlyHint": false,
+    "destructiveHint": true
+  },
+  {
+    "name": "cosmic_types_list",
+    "title": "List object types",
+    "description": "List object types and their metafield schemas.",
+    "scope": "bucket",
+    "readOnlyHint": true,
+    "destructiveHint": false
+  },
+  {
+    "name": "cosmic_types_get",
+    "title": "Get object type",
+    "description": "Get one object type by slug, including its metafields.",
+    "scope": "bucket",
+    "readOnlyHint": true,
+    "destructiveHint": false
+  },
+  {
+    "name": "cosmic_types_create",
+    "title": "Create object type",
+    "description": "Create an object type and its metafields. Requires write access.",
+    "scope": "bucket",
+    "readOnlyHint": false,
+    "destructiveHint": false
+  },
+  {
+    "name": "cosmic_types_update",
+    "title": "Update object type",
+    "description": "Update an object type's title, metafields, or options. Requires write access.",
+    "scope": "bucket",
+    "readOnlyHint": false,
+    "destructiveHint": true
+  },
+  {
+    "name": "cosmic_types_delete",
+    "title": "Delete object type",
+    "description": "Delete an object type and every object of that type. Requires write access.",
+    "scope": "bucket",
+    "readOnlyHint": false,
+    "destructiveHint": true
+  },
+  {
+    "name": "cosmic_blocks_list",
+    "title": "List content blocks",
+    "description": "List reusable rich-text Content Blocks, the {{name /}} tokens available in rich-text fields.",
+    "scope": "bucket",
+    "readOnlyHint": true,
+    "destructiveHint": false
+  },
+  {
+    "name": "cosmic_ai_generate_text",
+    "title": "Generate text",
+    "description": "Generate text with Cosmic AI. Requires write access.",
+    "scope": "bucket",
+    "readOnlyHint": false,
+    "destructiveHint": false
+  },
+  {
+    "name": "cosmic_ai_generate_image",
+    "title": "Generate image",
+    "description": "Generate an image or SVG and upload it to the media library. Requires write access.",
+    "scope": "bucket",
+    "readOnlyHint": false,
+    "destructiveHint": false
+  },
+  {
+    "name": "cosmic_ai_generate_video",
+    "title": "Generate video",
+    "description": "Generate a video and upload it to the media library. Requires write access.",
+    "scope": "bucket",
+    "readOnlyHint": false,
+    "destructiveHint": false
+  },
+  {
+    "name": "cosmic_ai_generate_audio",
+    "title": "Generate audio",
+    "description": "Generate speech from text and upload it to the media library. Requires write access.",
+    "scope": "bucket",
+    "readOnlyHint": false,
+    "destructiveHint": false
+  },
+  {
+    "name": "cosmic_agent_signup",
+    "title": "Create agent project",
+    "description": "Create an unclaimed Cosmic project for a human email. Served at /v1/agent, not on the bucket endpoint.",
+    "scope": "agent",
+    "readOnlyHint": false,
+    "destructiveHint": false
+  },
+  {
+    "name": "cosmic_agent_verify",
+    "title": "Verify agent project",
+    "description": "Submit the 6-digit code from the claim email. Served at /v1/agent.",
+    "scope": "agent",
+    "readOnlyHint": false,
+    "destructiveHint": false
+  },
+  {
+    "name": "cosmic_agent_status",
+    "title": "Get agent status",
+    "description": "Read claim status, plan, and limits for the agent key. Served at /v1/agent.",
+    "scope": "agent",
+    "readOnlyHint": true,
+    "destructiveHint": false
+  }
+]
