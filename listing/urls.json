@@ -1,0 +1,12 @@
+{
+  "docs": "https://www.cosmicjs.com/docs/mcp-server",
+  "privacy": "https://www.cosmicjs.com/privacy-policy",
+  "support": "https://github.com/cosmicjs/mcp/issues",
+  "supportEmail": "support@cosmicjs.com",
+  "discord": "https://discord.gg/cosmic",
+  "website": "https://www.cosmicjs.com",
+  "repository": "https://github.com/cosmicjs/mcp",
+  "npm": "https://www.npmjs.com/package/@cosmicjs/mcp",
+  "registry": "https://registry.modelcontextprotocol.io/v0/servers?search=com.cosmicjs/mcp",
+  "hosted": "https://mcp.cosmicjs.com/v1/buckets/{bucket_slug}"
+}
